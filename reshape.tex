@@ -1,0 +1,9 @@
+\documentclass{article}
+% \usepackage[paperwidth=460mm,paperheight=700mm,textwidth=459mm,textheight=699mm,left=1mm,top=1mm]{geometry}
+\usepackage[paperwidth=230mm,paperheight=176mm,textwidth=230mm,textheight=175mm,left=.5mm,top=.5mm]{geometry}
+\usepackage{pdfpages}
+\parindent=0pt
+\def\pdffilename{main.pdf}
+\begin{document}
+\includepdf[pages={-},delta=.3mm .3mm,nup=4x2,frame=true]{\pdffilename}
+\end{document}

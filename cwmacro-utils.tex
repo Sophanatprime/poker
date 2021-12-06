@@ -1,0 +1,96 @@
+\int_new:N \l__cwutils_begin_int
+\int_new:N \l__cwutils_end_int
+\int_new:N \l__cwutils_max_int
+\int_new:N \l__cwutils_min_int
+\bool_new:N \l__cwutils_invalid_range_bool
+\cs_new_protected:Npn \cwutils_parse_range_check: 
+  {
+    \cs_set_eq:NN \__cwutils_parse_range_single:n \__cwutils_parse_range_single_check:n 
+    \cs_set_eq:NN \__cwutils_parse_range_range: \__cwutils_parse_range_range_check:
+  }
+\cs_new_protected:Npn \cwutils_parse_range_nocheck: 
+  {
+    \cs_set_eq:NN \__cwutils_parse_range_single:n \__cwutils_parse_range_single_nocheck:n 
+    \cs_set_eq:NN \__cwutils_parse_range_range: \__cwutils_parse_range_range_nocheck:
+  }
+\cs_new_protected:Npn \cwutils_parse_range:nnnN #1#2#3#4
+  {
+    \seq_set_eq:NN #4 \c_empty_seq
+    \int_set:Nn \l__cwutils_min_int {#1}
+    \int_set:Nn \l__cwutils_max_int {#2}
+    \clist_map_inline:nn {#3}
+      {
+        \__cwutils_parse_range_aux:n {##1}
+        \bool_if:NF \l__cwutils_invalid_range_bool
+          { \seq_concat:NNN #4 #4 \l__cwutils_tmpa_seq }
+      }
+  }
+\cs_generate_variant:Nn \cwutils_parse_range:nnnN { nnvN, nnxN }
+\cs_new_protected:Npn \cwutils_parse_range:nnN 
+  { \cwutils_parse_range:nnnN { 1 } }
+\cs_generate_variant:Nn \cwutils_parse_range:nnN { nvN, nxN }
+\cs_new_protected:Npn \__cwutils_parse_range_aux:n #1
+  {
+    \bool_set_false:N \l__cwutils_invalid_range_bool
+    \seq_clear:N \l__cwutils_tmpa_seq
+    \tl_if_in:nnTF {#1} { - }
+      {
+        \seq_set_split:Nnn \l__cwutils_tmpb_seq { - } {#1}
+        \seq_pop_left:NN \l__cwutils_tmpb_seq \l__cwutils_tmpa_tl
+        \tl_if_empty:NTF \l__cwutils_tmpa_tl
+          { \int_set_eq:NN \l__cwutils_begin_int \l__cwutils_min_int }
+          {
+            \int_set:Nn \l__cwutils_begin_int { \l__cwutils_tmpa_tl }
+            \int_compare:nNnT \l__cwutils_begin_int < \l__cwutils_min_int
+              {
+                \int_set_eq:NN \l__cwutils_begin_int \l__cwutils_min_int
+              }
+          }
+        \seq_pop_left:NN \l__cwutils_tmpb_seq \l__cwutils_tmpa_tl
+        \tl_if_empty:NTF \l__cwutils_tmpa_tl
+          { \int_set_eq:NN \l__cwutils_end_int \l__cwutils_max_int }
+          {
+            \int_set:Nn \l__cwutils_end_int { \l__cwutils_tmpa_tl }
+            \int_compare:nNnT \l__cwutils_end_int > \l__cwutils_max_int
+              {
+                \int_set_eq:NN \l__cwutils_end_int \l__cwutils_max_int
+              }
+          }
+        \__cwutils_parse_range_range:
+      }
+      { \__cwutils_parse_range_single:n {#1} }
+  }
+\cs_new:Npn \__cwutils_parse_range_single_check:n #1
+  {
+    \bool_lazy_or:nnTF
+      { \int_compare_p:nNn {#1} > \l__cwutils_max_int }
+      { \int_compare_p:nNn {#1} < \l__cwutils_min_int }
+      { \bool_set_true:N \l__cwutils_invalid_range_bool }
+      { \seq_put_right:Nn \l__cwutils_tmpa_seq {#1} }
+  }
+\cs_new:Npn \__cwutils_parse_range_single_nocheck:n #1
+  { \seq_put_right:Nn \l__cwutils_tmpa_seq {#1} }
+\cs_new_eq:NN \__cwutils_parse_range_single:n \__cwutils_parse_range_single_check:n 
+\cs_new:Npn \__cwutils_parse_range_range_check: 
+  {
+    \bool_lazy_or:nnTF
+      { \int_compare_p:nNn \l__cwutils_begin_int > \l__cwutils_max_int }
+      { \int_compare_p:nNn \l__cwutils_begin_int > \l__cwutils_end_int }
+      { \bool_set_true:N \l__cwutils_invalid_range_bool }
+      {
+        \int_step_inline:nnn
+          { \l__cwutils_begin_int } { \l__cwutils_end_int }
+          { \seq_put_right:Nn \l__cwutils_tmpa_seq {##1} }
+      }
+  }
+\cs_new:Npn \__cwutils_parse_range_range_nocheck:
+  {
+    \int_compare:nNnTF \l__cwutils_begin_int > \l__cwutils_end_int
+      { \bool_set_true:N \l__cwutils_invalid_range_bool }
+      {
+        \int_step_inline:nnn
+          { \l__cwutils_begin_int } { \l__cwutils_end_int }
+          { \seq_put_right:Nn \l__cwutils_tmpa_seq {##1} }
+      }
+  }
+\cs_new_eq:NN \__cwutils_parse_range_range: \__cwutils_parse_range_range_check:
